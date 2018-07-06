@@ -4,7 +4,8 @@ import {
     View,
     TextInput,
     Button,
-    Text
+    Text,
+    DatePickerAndroid
 } from 'react-native';
 import Toast from 'react-native-root-toast';
 import { Actions } from 'react-native-router-flux';
@@ -23,11 +24,6 @@ export default class BookList extends Component {
             bookAuthor: "",
             publishedDate: ""
         }
-
-        this.day = new Date().getDate();
-        this.month = new Date().getMonth() + 1;
-        this.year = new Date().getFullYear();
-        this.today = this.day + '/' + this.month + '/' + this.year;
     }
 
     addBook() {
@@ -47,8 +43,8 @@ export default class BookList extends Component {
             this.setState({
                 bookAuthor: ""
             });
-        } else if (!this.dateValidation(this.state.publishedDate)) {
-            msg = 'Please fill a Valid Date';
+        } else if (!this.state.publishedDate) {
+            msg = 'Please Pick a Date';
             this.setState({
                 publishedDate: ""
             });
@@ -93,27 +89,23 @@ export default class BookList extends Component {
         });
     }
 
-    dateValidation(dateString) {
-        if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateString)) {
-            return false;
-        }
-        var parts = dateString.split("/");
-        var newDay = parseInt(parts[0], 10);
-        var newMonth = parseInt(parts[1], 10);
-        var newYear = parseInt(parts[2], 10);
-        var currentYear = parseInt(this.year, 10);
-
-        if (newYear < 1000 || newYear > currentYear || newMonth < 1 || newMonth > 12) {
-            return false;
-        }
-
-        var monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-        if (newYear % 400 == 0 || (newYear % 100 != 0 && newYear % 4 == 0))
-            monthLength[1] = 29;
-
-        return newDay > 0 && newDay <= monthLength[newMonth - 1];
-    }
+    async getDate(){
+        try {
+                 const {action, year, month, day} = await DatePickerAndroid.open({           
+                     date: new Date()
+                 });
+     
+                 if(action == DatePickerAndroid.dateSetAction){
+                     this.setState({
+                        publishedDate: day + '/' + (month+1) + '/' + year
+                     });
+                     console.log(day + '/' + (month+1) + '/' + year);
+                 }
+     
+             } catch ({code, message}) {
+                 console.warn('Cannot open date picker', message);
+             }   
+     }
 
     render() {
         return (
@@ -126,21 +118,23 @@ export default class BookList extends Component {
                 <TextInput
                     style={{ height: 40 }}
                     onChangeText={(text) => this.setState({ bookTitle: text })}
-                    placeholder={"Title"}
-                    value={ this.state.bookTitle }
+                    placeholder={this.state.bookTitle ? this.state.bookTitle : this.props.title}
                 />
                 <TextInput
                     style={{ height: 40 }}
                     onChangeText={(text) => this.setState({ bookAuthor: text })}
-                    placeholder={"Author"}
-                    value={ this.state.bookAuthor }
+                    placeholder={this.state.bookAuthor ? this.state.bookAuthor : this.props.author}
                 />
                 <TextInput
                     style={{ height: 40 }}
                     onChangeText={(text) => this.setState({ publishedDate: text })}
-                    placeholder={"DD/MM/YYYY"}
-                    value={ this.state.publishedDate }
+                    placeholder={this.state.publishedDate ? this.state.publishedDate : this.props.published}
                 />
+                <Button
+                    onPress={() => this.getDate()}
+                    title="Pick Date"
+                    color="blue"
+                    />
                 <View style={styles.buttons}>
                     <Button
                         onPress={() => this.addBook()}

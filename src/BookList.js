@@ -6,6 +6,7 @@ import {
     ListView,
     TouchableOpacity,
     Keyboard,
+    DatePickerAndroid
 } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import booksJson from './books.json';
@@ -34,7 +35,7 @@ export default class BookList extends Component {
                 this.booksData.push(this.props);
             }
         }
-
+        this.newDate = "";
         this.LoadBooks();
     }
 
